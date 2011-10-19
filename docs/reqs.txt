@@ -1,0 +1,56 @@
+bulk loader needs to be clean, error-sensitive bulk
+widget views need to be fast: one slow one brings down whole request (in the future, one request -> websockets back for each widget)
+    but for now we only have two widgets
+
+widget tag that generates a div with metadata
+{% widget name=comments arg1 arg2 kwarg1=kwval1 %}
+    -> <div class="cmWidget" data-name="comments" data-args="arg1 arg2" data-kwarg1="kwval1"></div>
+        -> {template:"TODO MUSTACHE", ....}.mixin({**request.user})
+{% widget userinfo %}
+    -> <div class="cmWidget" data-name="userinfo"></div>
+        -> {template:"TODO MUSTACHE"}.mixin({**request.user})
+always
+    -> {**request.user}
+
+
+the bulk view will mixin user data for every metadata object headed back to browser
+
+possibly send url for template; can be cached
+
+templates:
+    use mustache
+    keep in /templates in their own files
+    write a simple caching template loader (possibly save for later, initially they can be hard-coded)
+    until it becomes an issue they are completely site-neutral
+
+
+# this whole app needs to be easily rewritten
+app/
+    views/
+        base.py # base view class; define cacheable part, uncacheable, return dicts; dump into json, return to bulk
+        bulk.py
+        tastypie.py
+    templatetags/
+        widget.py # takes name, args, kwargs; maps to handlers in the bulk; use a setting/argument to determine the target URL
+    urls.py # to the bulk
+
+js/
+    app.js # find sentinels, make request, get json, render templates, write out divs; initially mustache-only; try to make backend agnostic; can't be django specific
+
+
+var happy = function() {
+    // delegate to selector
+}
+happy.xhr = function() {
+    //delegates to $.ajax or $x().xhr
+}
+
+don't want discovery; would love templat tag to get js into HEAD that triggers loading, rendering later, but doesn't seem possible
+-> start with discovery
+-> then implement middleware
+
+
+initially: 2 weeks:
+- no middleware
+- no template loader
+- tasypiemaybe

@@ -1,0 +1,8 @@
+[{
+    "template":"hi there {{name}} are you {{status}}?",
+    "context": {
+        "name":"nate",
+        "status":"green"
+    },
+    "div_id": "123"
+}]
