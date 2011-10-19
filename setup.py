@@ -1,8 +1,6 @@
 from setuptools import setup, find_packages
 import os
 
-os.chdir('py')
-
 setup(
     name = "marimo",
     version = "0.1",
