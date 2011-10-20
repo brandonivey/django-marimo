@@ -12,36 +12,38 @@ MARIMO_TIMEOUT = getattr(settings, 'MARIMO_TIMEOUT', 60*60*24)
 class BaseWidget(object):
     """
     Extend BaseWidget to make marimo widget handlers.
-    template: the template that this widget will use
-    use_cache:  If nothing is cacheable in your handler set this to false and don't define a cacheable method
-    cacheable:  This should accept a dictionary argument *args and **kwargs.  
-                Everything in this part will be cached using your cache_key method
-    uncacheable: This takes a dictionary and will modify it with uncacheable information
-    cache_key:  This is they key 
+
+    Properties::
+
+        use_cache:  If nothing is cacheable in your handler set this to false and don't define a cacheable method
+        template: the template that this widget will use. Can be a path relative to a dir in MARIMO_TEMPLATE_DIRS.
 
     """
-    # TODO: make this a view by wrapping the __call__
-    # TODO: everything seems stateless should these be classmethods?
-
     use_cache = True
+    template = ''
 
+    # TODO: everything seems stateless should these be classmethods?
     def cacheable(self, response, *args, **kwargs):
         """
+        Updates and returns response dictionary with cacheable data.
+
         Should be overriden in subclasses if use_cache=True
-        should update response with cacheable information and return it
         """
         return response
 
     def uncacheable(self, request, response, *args, **kwargs):
         """
-        should update context based on request specific information and return it
+        Updates response dictionary with uncacheable data.
+
+        Should be overwritten in all subclasses.
         """
         return response
 
     def cache_key(self, *args, **kwargs):
         """
-        Must be overridden in subclass if use_cache=True
         Generates the cache key that this widget will use based on  *args and **kwargs
+
+        Must be overridden in subclass if use_cache=True
         """
         raise NotImplementedError
 
@@ -70,8 +72,8 @@ class BaseWidget(object):
         return data
 
     def __call__(self, request, *args, **kwargs):
-        """ 
-        Splits up work into cachable and uncacheable parts 
+        """
+        Splits up work into cachable and uncacheable parts
         """
 
         if self.use_cache:
