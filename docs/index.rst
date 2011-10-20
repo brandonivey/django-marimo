@@ -5,13 +5,19 @@ django-marimo provides a template tag and a requestful widget routing/handling s
 
 .. _marimo: http://github.com/coxmediagroup/marimo
 
+Tutorial
+--------
+
+TODO write this1
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
+   settings
+   registry
    template_tag
-   widget_handlers
    reference
 
 Indices and tables
