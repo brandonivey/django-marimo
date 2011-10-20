@@ -1,7 +1,6 @@
-.. _marimo:
+API Reference
+=============
 
-Marimo
-==================
 This is a brief description of ``marimo``
 
 :mod:`marimo.templatetags`
