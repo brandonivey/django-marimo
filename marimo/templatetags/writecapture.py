@@ -9,7 +9,7 @@ def jsescape(string):
     """ escaping so that javascript can be safely put into json dicts 
         for some reason json newline escaping isn't enough??
     """
-    return string.replace('<\script>','$ENDSCRIPT').replace('\n', '$NEWLINE').replace('\r','')
+    return string.replace('</script>','$ENDSCRIPT').replace('\n', '$NEWLINE').replace('\r','')
 
 @register.tag(name='writecapture')
 def write_capture(parser, token):
