@@ -42,7 +42,6 @@ class WriteCaptureNode(template.Node):
         widget_dict = dict(widget_prototype=self.prototype, 
                             id=self.widget_id, 
                             html=eviloutput,
-                            draw_events=[self.widget_id+"_ready"]
                          )
         output = """<div id="{widget_id}"></div>
 <script type="text/javascript">
