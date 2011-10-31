@@ -9,7 +9,3 @@ def smart_import(mpath):
         rest = smart_import('.'.join(split[:-1]))
         rest = getattr(rest, split[-1])
     return rest
-
-def jsescape(string):
-    """ escaping so that javascript can be safely put into json dicts """
-    return string.replace('<\script>','$ENDSCRIPT')
