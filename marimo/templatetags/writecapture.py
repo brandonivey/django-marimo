@@ -1,6 +1,9 @@
+import json
 import random
 
 from django import template
+
+from marimo.utils import jsescape
 
 register = template.Library()
 
@@ -31,20 +34,16 @@ class WriteCaptureNode(template.Node):
             self.widget_id = 'writecapture' + str(random.randint(0,99999999))
 
     def render(self, context):
-        eviloutput = self.nodelist.render(context).replace('</script>','$ENDSCRIPT').replace('\n', '').replace('\r', '')
+        eviloutput = jsescape(self.nodelist.render(context))
+        widget_dict = dict(widget_prototype=self.prototype, id=self.widget_id, html=eviloutput)
         output = """<div id="{widget_id}"></div>
 <script type="text/javascript">
     marimo.emit('{widget_id}_ready');
-    marimo.add_widget({{
-        widget_prototype:'{prototype}',
-        id: '{widget_id}',
-        html: '{eviloutput}'
-    }});
+    marimo.add_widget({widget_json});
 </script>"""
         output = output.format(
             widget_id=self.widget_id,
-            prototype=self.prototype,
-            eviloutput=eviloutput
+            widget_json=json.dumps(widget_dict),
         )
 
         return output
