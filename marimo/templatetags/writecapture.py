@@ -39,7 +39,11 @@ class WriteCaptureNode(template.Node):
 
     def render(self, context):
         eviloutput = jsescape(self.nodelist.render(context))
-        widget_dict = dict(widget_prototype=self.prototype, id=self.widget_id, html=eviloutput)
+        widget_dict = dict(widget_prototype=self.prototype, 
+                            id=self.widget_id, 
+                            html=eviloutput,
+                            draw_events=[self.widget_id+"_ready"]
+                         )
         output = """<div id="{widget_id}"></div>
 <script type="text/javascript">
     marimo.emit('{widget_id}_ready');
