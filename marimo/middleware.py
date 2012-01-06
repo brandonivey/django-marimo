@@ -1,9 +1,8 @@
 import json
 import re
 
-# TODO: these seem like they should be django settings
+# TODO: this seems like it should be a django setting
 MARIMO_PLACEHOLDER = re.compile("\$\{MARIMO\}")
-SLOW_EVENT = "dombodyloaded"
 
 class Marimo(object):
     """ 
@@ -13,7 +12,7 @@ class Marimo(object):
     def process_request(self, request):
         """ sticks marimo_widgets in the request """
         request.marimo_widgets = []
-        request.marimo_slow = False
+        request.marimo_writecapture_delay = ''
 
     def process_response(self, request, response):
         """ generates a script to register and load the widgets with marimo """
@@ -24,9 +23,9 @@ class Marimo(object):
             return response
         code = "marimo.add_widgets(%s);" %json.dumps(request.marimo_widgets)
 
-        if getattr(request, 'marimo_slow', False):
+        if getattr(request, 'marimo_writecapture_delay', False):
             # TODO this should concat not replace
-            code = "marimo.widgetlib.writecapture_widget.render_events = ['%s'];" % SLOW_EVENT + code
+            code = "marimo.widgetlib.writecapture_widget.render_events = ['%s'];" % request.marimo_writecapture_delay + code
 
         response.content = MARIMO_PLACEHOLDER.sub(code, response.content)
         return response
@@ -36,6 +35,6 @@ def context_processor(request):
     extra_context = {}
     if hasattr(request, 'marimo_widgets'):
         extra_context['marimo_widgets'] = request.marimo_widgets
-    if hasattr(request, 'marimo_slow'):
-        extra_context['marimo_slow'] = request.marimo_slow
+    if hasattr(request, 'marimo_writecapture_delay'):
+        extra_context['marimo_writecaptuer_delay'] = request.marimo_writecapture_delay
     return extra_context
