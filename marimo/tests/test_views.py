@@ -67,6 +67,7 @@ class TestRouterView(TestCase):
 
     # TODO test fetching a callable with smart_import. this is too gnarly for now.
 
+
 class TestBaseView(TestCase):
     def setUp(self):
         self.base = BaseWidget()
