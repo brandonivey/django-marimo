@@ -83,7 +83,7 @@ class WriteCaptureDelayNode(template.Node):
         output = ''
         if self.event is None:
             self.event = 'write_' + str(random.randint(0,999999))
-            output = """<script type="text/javascript">marimo.emit(%s);</script>""" % self.event
+            output = """<script type="text/javascript">marimo.emit('%s');</script>""" % self.event
 
         # this should only be used once per page if it's uses a second time overwrite but log an error
         if context['marimo_writecapture_delay']:
