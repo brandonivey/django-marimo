@@ -1,9 +1,8 @@
 import json
 import re
 
-# TODO: these seem like they should be django settings
+# TODO: this seems like it should be a django setting
 MARIMO_PLACEHOLDER = re.compile("\$\{MARIMO\}")
-SLOW_EVENT = "dombodyloaded"
 
 
 class MarimoEventContainer(object):
@@ -40,11 +39,8 @@ class Marimo(object):
 
         wc_delay = getattr(request, 'marimo_writecapture_delay')
         if wc_delay.marimo_event:
-            code = "marimo.widgetlib.writecapture_widget.render_events = " \
-                   "['%s'];%s" % (wc_delay.marimo_event, code)
-        if getattr(request, 'marimo_slow', False):
-            # TODO this should concat not replace
-            code = "marimo.widgetlib.writecapture_widget.render_events = ['%s'];" % SLOW_EVENT + code
+            code = "marimo.widgetlib.writecapture_widget.default_render_events" \
+                   " = %s;\n%s" % (json.dumps([wc_delay.marimo_event]), code)
 
         response.content = MARIMO_PLACEHOLDER.sub(code, response.content)
         return response

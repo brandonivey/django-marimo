@@ -6,6 +6,7 @@ from django import template
 import logging
 logger = logging.getLogger(__name__)
 
+
 register = template.Library()
 
 def jsescape(string):
@@ -97,4 +98,33 @@ class WriteCaptureDelayNode(template.Node):
             logger.error('Overwriting the marimo event delay %s with %s' % 
                          (wc_delay.marimo_event, self.event))
         wc_delay.marimo_event = self.event
+        return output
+
+@register.tag(name='writecapture_delay')
+def write_capture_delay(parser, token):
+    """
+        Syntax::
+            {% writecapture_delay [event_name] %}
+    """
+    tokens = token.split_contents()
+    if len(tokens) > 2:
+        raise template.TemplateSyntaxError("writecapture_delay takes at most 1 argument")
+    if len(tokens) == 2:
+        return WriteCaptureDelayNode(tokens[1])
+    return WriteCaptureDelayNode()
+
+class WriteCaptureDelayNode(template.Node):
+    def __init__(self, event=None):
+        self.event = event
+
+    def render(self, context):
+        output = ''
+        if self.event is None:
+            self.event = 'write_' + str(random.randint(0,999999))
+            output = """<script type="text/javascript">marimo.emit(%s);</script>""" % self.event
+
+        # this should only be used once per page if it's uses a second time overwrite but log an error
+        if context['marimo_writecapture_delay']:
+            logger.error('Overwriting the marimo event delay %s with %s' %(context['marimo_writecapture_delay'], self.event))
+        context['marimo_writecapture_delay'] = self.event
         return output
