@@ -26,6 +26,7 @@ class Marimo(object):
         """ sticks marimo_widgets in the request """
         request.marimo_widgets = []
         request.marimo_writecapture_delay = MarimoEventContainer()
+        request.marimo_slow = False
 
     def process_response(self, request, response):
         """ generates a script to register and load the widgets with marimo """
@@ -40,6 +41,9 @@ class Marimo(object):
         if wc_delay.marimo_event:
             code = "marimo.widgetlib.writecapture_widget.render_events = " \
                    "['%s'];%s" % (wc_delay.marimo_event, code)
+        if getattr(request, 'marimo_slow', False):
+            # TODO find slow event and this should concat not replace
+            code = "marimo.widgetlib.writecapture_widget.render_events = [%s];" % SLOW_EVENT + code
 
         response.content = MARIMO_PLACEHOLDER.sub(code, response.content)
         return response
@@ -51,4 +55,6 @@ def context_processor(request):
         extra_context['marimo_widgets'] = request.marimo_widgets
     if hasattr(request, 'marimo_writecapture_delay'):
         extra_context['marimo_writecapture_delay'] = request.marimo_writecapture_delay
+    if hasattr(request, 'marimo_slow'):
+        extra_context['marimo_slow'] = request.marimo_slow
     return extra_context
