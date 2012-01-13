@@ -52,6 +52,4 @@ def context_processor(request):
         extra_context['marimo_widgets'] = request.marimo_widgets
     if hasattr(request, 'marimo_writecapture_delay'):
         extra_context['marimo_writecapture_delay'] = request.marimo_writecapture_delay
-    if hasattr(request, 'marimo_slow'):
-        extra_context['marimo_slow'] = request.marimo_slow
     return extra_context
