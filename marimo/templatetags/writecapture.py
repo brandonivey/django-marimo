@@ -84,5 +84,5 @@ class WriteCaptureDelayNode(template.Node):
         # this should only be used once per page if it's uses a second time overwrite but log an error
         if context['marimo_writecapture_delay']:
             logger.error('Overwriting the marimo event delay %s with %s' %(context['marimo_writecapture_delay'], self.event))
-        context['marimo_writecapture_delay'] = self.event
+        context['marimo_writecapture_delay'][0] = self.event
         return output
