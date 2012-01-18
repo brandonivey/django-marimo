@@ -37,6 +37,7 @@ class MarimoRouter(View):
             print "doing: %s"%widget['id']
             # Try to get a callable from the dict... if it's not imported deal with it
             data = { 'id': widget['id'], }
+            # TODO these try excepts are fucking hateful. Clean this up.
             try:
                 view = _marimo_widgets[widget['widget_name']]
             except KeyError:
@@ -51,7 +52,11 @@ class MarimoRouter(View):
                 try:
                     data.update(view(request, *widget['args'], **widget['kwargs']))
                 except Exception, e:
-                    data = view.on_error(e, data, request, *widget['args'], **widget['kwargs'])
+                    try:
+                        data = view.on_error(e, data, request, *widget['args'], **widget['kwargs'])
+                    except:
+                        # BARE EXCEPPPPTTTT TODO TODO TODO
+                        data = view.on_error(e, data, request, *[], **{})
                 else:
                     data['status'] = 'succeeded'
             finally:
