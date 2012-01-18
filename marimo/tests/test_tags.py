@@ -6,6 +6,8 @@ from django import template
 
 import mock
 
+from marimo.middleware import MarimoEventContainer
+
 
 class FailingWidget(object):
     def __call__(self, request, *args, **kwargs):
@@ -27,9 +29,12 @@ class TestTag(TestCase):
         self.context = template.Context()
         request = mock.Mock()
         request.marimo_widgets = []
+        request.marimo_writecapture_delay = MarimoEventContainer()
         request.META = dict(PATH_INFO='/some/path')
+        self.request = request
         self.context['request'] = request
         self.context['marimo_widgets'] = request.marimo_widgets
+        self.context['marimo_writecapture_delay'] = request.marimo_writecapture_delay
 
     def tearDown(self):
         if self.real_murl is None:
@@ -44,4 +49,12 @@ class TestTag(TestCase):
         self.assertTrue(re.search(r'<div id="test_.+" class="marimo class"', rendered))
         self.assertEquals(len(self.context['marimo_widgets']), 1)
 
+    def test_writecapture_delay_tag_no_args(self):
+        t = template.Template("""{% load writecapture %} {% writecapture_delay %}""")
+        rendered = t.render(self.context)
+        self.assertTrue("write_" in self.request.marimo_writecapture_delay.marimo_event)
 
+    def test_writecapture_delay_tag_with_event(self):
+        t = template.Template("""{% load writecapture %} {% writecapture_delay documentready %}""")
+        rendered = t.render(self.context)
+        self.assertTrue("documentready" in self.request.marimo_writecapture_delay.marimo_event)
