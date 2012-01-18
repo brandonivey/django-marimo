@@ -39,9 +39,14 @@ class WriteCaptureNode(template.Node):
 
     def render(self, context):
         eviloutput = jsescape(self.nodelist.render(context))
-        widget_dict = dict(widget_prototype=self.prototype, 
-                            id=self.widget_id, 
+        #Set this flag in your template tag for advanced write capture widget sanitation.
+        #Source: https://github.com/iamnoah/writeCapture/wiki/Usage
+        wc_compatiblity_mode = context['wc_compatiblity_mode'] if 'wc_compatiblity_mode' in context else 0
+
+        widget_dict = dict(widget_prototype=self.prototype,
+                            id=self.widget_id,
                             html=eviloutput,
+                            wc_compatiblity_mode = wc_compatiblity_mode,
                          )
         output = """<div id="{widget_id}"></div>
 <script type="text/javascript">
@@ -52,5 +57,4 @@ class WriteCaptureNode(template.Node):
             widget_id=self.widget_id,
             widget_json=json.dumps(widget_dict),
         )
-
         return output
