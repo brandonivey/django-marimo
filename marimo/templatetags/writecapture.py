@@ -5,7 +5,10 @@ from django import template
 
 import logging
 logger = logging.getLogger(__name__)
+<<<<<<< HEAD
 
+=======
+>>>>>>> Created an explicit container to hold Marimo events, added tests.
 
 register = template.Library()
 
@@ -123,8 +126,16 @@ class WriteCaptureDelayNode(template.Node):
             self.event = 'write_' + str(random.randint(0,999999))
             output = """<script type="text/javascript">marimo.emit('%s');</script>""" % self.event
 
-        # this should only be used once per page if it's uses a second time overwrite but log an error
-        if context['marimo_writecapture_delay']:
-            logger.error('Overwriting the marimo event delay %s with %s' %(context['marimo_writecapture_delay'], self.event))
-        context['marimo_writecapture_delay'][0] = self.event
+        # this should only be used once per page if it's uses a second time
+        # overwrite but log an error
+        wc_delay = context.get('marimo_writecapture_delay', None)
+        if not wc_delay:
+            logger.error("The writecapture_delay was called but didn't find "
+                         "marimo_writecapture_delay in the context. The tag "
+                         "depends on the Marimo middleware and context_processor.")
+            return output
+        if wc_delay.marimo_event:
+            logger.error('Overwriting the marimo event delay %s with %s' % 
+                         (wc_delay.marimo_event, self.event))
+        wc_delay.marimo_event = self.event
         return output
