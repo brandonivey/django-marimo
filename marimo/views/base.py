@@ -2,6 +2,8 @@
 BaseWidget is the a base class that can be extended to make marimo widget handlers 
 """
 import json
+import sys
+import traceback
 
 from django.conf import settings
 from django.core.cache import cache
@@ -52,22 +54,29 @@ class BaseWidget(object):
         cache_key = self.cache_key(*args, **kwargs)
         response = cache.get(cache_key)
         if response is None:
-            response = {'template':self.template, 'context':dict()}
             response = self.update_cache(response, *args, **kwargs)
         return response
 
     def update_cache(self, response, *args, **kwargs):
         """ call this with *args and **kwargs like a request to update the cache """
         cache_key = self.cache_key(*args, **kwargs)
+        if response is None:
+            response = {'template':self.template, 'context':dict()}
         response = self.cacheable(response, *args, **kwargs)
         cache.set(cache_key, response, MARIMO_TIMEOUT)
         return response
 
     def on_error(self, ex, data, request, *args, **kwargs):
         """ override this to provide custom exception handling """
-        # TODO fix tracebacks
         if getattr(settings, 'DEBUG', False):
-            raise ex
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            data['error'] = {
+                'type':repr(exc_type),
+                'value':repr(exc_value),
+                'traceback':'\n'.join(traceback.format_exception(exc_type,exc_value,exc_traceback)),
+            }
+        else:
+            data['msg'] = 'exception hidden. set DEBUG to true to get more info'
         data['status'] = 'failed'
         return data
 
