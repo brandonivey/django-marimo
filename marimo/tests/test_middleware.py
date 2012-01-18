@@ -41,6 +41,7 @@ class TestMiddleware(TestCase):
         self.middleware.process_response(req, resp)
         self.assertTrue("documentready" in resp.content)
 
+
 class TestContextProcessor(TestCase):
     def setUp(self):
         self.request = mock.Mock()
