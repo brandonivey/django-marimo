@@ -40,7 +40,7 @@ class TestMiddleware(TestCase):
         resp.content = "dummytext ${MARIMO} moredumbtext"
         self.middleware.process_response(req, resp)
         self.assertTrue("documentready" in resp.content)
-        print resp.content
+
 
 class TestContextProcessor(TestCase):
     def setUp(self):
