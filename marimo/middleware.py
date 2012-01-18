@@ -4,19 +4,28 @@ import re
 # TODO: this seems like it should be a django setting
 MARIMO_PLACEHOLDER = re.compile("\$\{MARIMO\}")
 
+
+class MarimoEventContainer(object):
+    """
+    Holds a marimo event to be shared between request attributes
+    and template context.
+
+    """
+    # TODO: currently this accommodates the event for the writecapture_delay
+    # tag, consider making the container more generic
+    def __init__(self, marimo_event=None):
+        self.marimo_event = marimo_event
+
+
 class Marimo(object):
-    """ 
+    """
     a simple middleware to register all widgets during page generation
     and add a script to load them where "${MARIMO}" is in the page
     """
     def process_request(self, request):
         """ sticks marimo_widgets in the request """
         request.marimo_widgets = []
-        # we use a list here and only touch the first element
-        # this is merely so that we can tweak values in it by reference
-        # TODO: consider making some sort of marimo context objects to
-        # track all of this stuff
-        request.marimo_writecapture_delay = []
+        request.marimo_writecapture_delay = MarimoEventContainer()
 
     def process_response(self, request, response):
         """ generates a script to register and load the widgets with marimo """
@@ -27,9 +36,10 @@ class Marimo(object):
             return response
         code = "marimo.add_widgets(%s);" %json.dumps(request.marimo_widgets)
 
-        if getattr(request, 'marimo_writecapture_delay', False):
-            # TODO this should concat not replace
-            code = "marimo.widgetlib.writecapture_widget.render_events = ['%s'];" % request.marimo_writecapture_delay[0] + code
+        wc_delay = getattr(request, 'marimo_writecapture_delay')
+        if wc_delay.marimo_event:
+            code = "marimo.widgetlib.writecapture_widget.render_events = " \
+                   "['%s'];%s" % (wc_delay.marimo_event, code)
 
         response.content = MARIMO_PLACEHOLDER.sub(code, response.content)
         return response
