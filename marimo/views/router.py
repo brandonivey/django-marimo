@@ -4,13 +4,25 @@ from django.conf import settings
 from django.http import Http404, HttpResponse
 from django.views.generic.base import View
 
-from marimo.utils import smart_import
+from marimo.utils import smart_import, composition_decorator
 
 try:
     _marimo_widgets = smart_import(settings.MARIMO_REGISTRY)
 except AttributeError:
     _marimo_widgets = {}
 
+@composition_decorator
+def set_cors_header(response):
+    '''Decorate a view to set the CORS header on the returned response object.
+
+    Set settings.MARIMO_CORS_HEADER = '*' to enable Cross-Origin Resource
+    Sharing with "all".  http://caniuse.com/cors
+
+    '''
+    acao = getattr(settings, 'MARIMO_CORS_HEADER', None)
+    if acao:
+        response['Access-Control-Allow-Origin'] = acao
+    return response
 
 class MarimoRouter(View):
     """
@@ -63,6 +75,7 @@ class MarimoRouter(View):
 
         return self.build_response(request, response)
 
+    @set_cors_header
     def build_response(self, request, data):
         as_json = json.dumps(data)
         if request.REQUEST.get('format') == 'jsonp' and request.REQUEST.get('callback'):
