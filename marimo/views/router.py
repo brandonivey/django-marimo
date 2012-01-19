@@ -41,14 +41,11 @@ class MarimoRouter(View):
                 clean_widget_kwargs[str(key)] = widget['kwargs'][key]
             widget['kwargs'] = clean_widget_kwargs
             # KCAH
-            print "doing: %s"%widget['id']
             # Try to get a callable from the dict... if it's not imported deal with it
             data = { 'id': widget['id'], }
             try:
                 view = _marimo_widgets[widget['widget_name']]
             except KeyError:
-                print widget['widget_name']
-                print _marimo_widgets
                 data['status'] = 'WidgetNotFound'
             else:
                 if not callable(view):
