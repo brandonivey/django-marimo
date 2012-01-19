@@ -1,5 +1,5 @@
 """
-BaseWidget is the a base class that can be extended to make marimo widget handlers 
+BaseWidget is the a base class that can be extended to make marimo widget handlers
 """
 import json
 import sys
@@ -18,7 +18,13 @@ class BaseWidget(object):
     Properties::
 
         use_cache:  If nothing is cacheable in your handler set this to false and don't define a cacheable method
-        template: the template that this widget will use. Can be a path relative to a dir in MARIMO_TEMPLATE_DIRS.
+        template:   A string; the template data that this widget will use. (Not a filename.)
+
+    To load a template from a file, consider:
+
+        template = template_loader.load('my_template.html')
+
+    ... which will look for its path relative to a dir in MARIMO_TEMPLATE_DIRS.
 
     """
     use_cache = True
