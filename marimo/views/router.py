@@ -53,7 +53,7 @@ class MarimoRouter(View):
                     _marimo_widgets[widget['widget_name']] = view
 
                 try:
-                    data.update(view(request, *widget['args'], **widget['kwargs']))
+                    data.update(view(request, *widget.get('args', []), **widget.get('kwargs', {})))
                 except Exception, e:
                     data = view.on_error(e, data, request, *widget['args'], **widget['kwargs'])
                 else:
