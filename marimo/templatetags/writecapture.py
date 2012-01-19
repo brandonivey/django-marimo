@@ -41,7 +41,7 @@ class WriteCaptureNode(template.Node):
         eviloutput = jsescape(self.nodelist.render(context))
         #Set this flag in your template tag for advanced write capture widget sanitation.
         #Source: https://github.com/iamnoah/writeCapture/wiki/Usage
-        wc_compatiblity_mode = context['wc_compatiblity_mode'] if 'wc_compatiblity_mode' in context else 0
+        wc_compatiblity_mode = context.get('wc_compatiblity_mode',0)
 
         widget_dict = dict(widget_prototype=self.prototype,
                             id=self.widget_id,
