@@ -52,7 +52,11 @@ class MarimoRouter(View):
                 try:
                     data.update(view(request, *widget['args'], **widget['kwargs']))
                 except Exception, e:
-                    data = view.on_error(e, data, request, *[], **{})
+                    try:
+                        data = view.on_error(e, data, request, *widget['args'], **widget['kwargs'])
+                    except:
+                        # BARE EXCEPPPPTTTT TODO TODO TODO
+                        data = view.on_error(e, data, request, *[], **{})
                 else:
                     data['status'] = 'succeeded'
             finally:
