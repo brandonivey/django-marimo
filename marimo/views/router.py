@@ -36,11 +36,11 @@ class MarimoRouter(View):
         for widget in bulk:
             # HACK TODO this is a hack for python < 2.6.6 which can't handle
             # unicode strings as dict keys when using them with **. It sucks.
-            clean_widget = {}
-            for key in widget.keys():
-                clean_widget[str(key)] = widget[key]
-            widget = clean_widget
-            # ENDHACK
+            clean_widget_kwargs = {}
+            for key in widget['kwargs'].keys():
+                clean_widget_kwargs[str(key)] = widget['kwargs'][key]
+            widget['kwargs'] = clean_widget_kwargs
+            # KCAH
             print "doing: %s"%widget['id']
             # Try to get a callable from the dict... if it's not imported deal with it
             data = { 'id': widget['id'], }
