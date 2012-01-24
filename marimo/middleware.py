@@ -38,9 +38,8 @@ class Marimo(object):
 
         wc_delay = getattr(request, 'marimo_writecapture_delay')
         if wc_delay.marimo_event:
-            code = "marimo.widgetlib.writecapture_widget.render_events = " \
-                   "['%s'];%s" % (wc_delay.marimo_event, code)
-
+            code = "marimo.widgetlib.writecapture_widget.default_render_events" \
+                   " = %s;\n%s" % (json.dumps([wc_delay.marimo_event]), code)
         response.content = MARIMO_PLACEHOLDER.sub(code, response.content)
         return response
 
