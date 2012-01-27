@@ -6,8 +6,8 @@ class TemplateNotFound(Exception):
     pass
 
 class TemplateLoader(object):
-    """ 
-    Loads and caches templates from files 
+    """
+    Loads and caches templates from files
     searches MARIMO_TEMPLATE_DIRS in order
     loads and caches the first template matching the path
     """
@@ -18,7 +18,7 @@ class TemplateLoader(object):
         self._templates = {}
 
     def load(self, path):
-        """ 
+        """
         load a template
         :param path: The path to the template you want to load from a dir in template_dirs
         """
