@@ -46,16 +46,21 @@ class MarimoRouter(View):
         response = []
         # TODO sanitize bulk
         for widget in bulk:
-            # HACK TODO this is a hack for python < 2.6.6 which can't handle
-            # unicode strings as dict keys when using them with **. It sucks.
+            # Clean kwargs; these are passed to python functions and can open
+            # us up to basic string injection attacks. any sensitive args
+            # (beginning with __) need to be stripped out. Also, there is a
+            # hack (TODO) for for python < 2.6.6 which can't handle unicode strings as
+            # dict keys when using them with **. It sucks.
             clean_widget_kwargs = {}
             for key in widget['kwargs'].keys():
-                clean_widget_kwargs[str(key)] = widget['kwargs'][key]
+                if not key.startswith('__'):
+                    clean_widget_kwargs[str(key)] = widget['kwargs'][key]
             widget['kwargs'] = clean_widget_kwargs
-            # KCAH
+
             # Try to get a callable from the dict... if it's not imported deal with it
             data = { 'id': widget['id'], }
             try:
+                # TODO widget_name -> widget_handler; also fall back to widget_id and widget_prototype in searching for handler.
                 view = _marimo_widgets[widget['widget_name']]
             except KeyError:
                 data['status'] = 'WidgetNotFound'

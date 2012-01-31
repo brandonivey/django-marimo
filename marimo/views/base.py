@@ -68,17 +68,25 @@ class BaseWidgetHandler(object):
         """
         pass
 
-    def get_cache(self, *args, **kwargs):
-        """ get current cached cacheable part """
+    def get_cache(self, __update=False, *args, **kwargs):
+        """
+        get current cached cacheable part. Updates data in cache with data
+        from self.uncacheable.
+        """
         response = None
         cache_key = self.cache_key(*args, **kwargs)
-        if cache_key:
+        if cache_key and not __update:
             response = cache.get(cache_key)
         if response is None:
             response = self.cacheable({'context': dict()}, *args, **kwargs)
-        if cache_key:
-            cache.set(cache_key, response, MARIMO_TIMEOUT)
+            if cache_key:
+                cache.set(cache_key, response, MARIMO_TIMEOUT)
         return response
+
+    def update_cache(self, *args, **kwargs):
+        """ convenience wrapper around get_cache for cache invalidation """
+        kwargs['__update'] = True
+        self.get_cache(*args, **kwargs)
 
     def on_error(self, ex, data, request, *args, **kwargs):
         """ override this to provide custom exception handling """
