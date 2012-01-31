@@ -5,10 +5,6 @@ from django import template
 
 import logging
 logger = logging.getLogger(__name__)
-<<<<<<< HEAD
-
-=======
->>>>>>> Created an explicit container to hold Marimo events, added tests.
 
 register = template.Library()
 
