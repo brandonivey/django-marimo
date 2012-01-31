@@ -26,7 +26,6 @@ class Marimo(object):
         """ sticks marimo_widgets in the request """
         request.marimo_widgets = []
         request.marimo_writecapture_delay = MarimoEventContainer()
-        request.marimo_slow = False
 
     def process_response(self, request, response):
         """ generates a script to register and load the widgets with marimo """
