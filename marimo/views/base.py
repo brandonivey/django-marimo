@@ -21,6 +21,18 @@ class BaseWidgetHandler(object):
 
     """
 
+    def default_response(self, *args, **kwargs):
+        """A default response to pass into cacheable(), which will be modified
+        and eventually returned.
+
+        We do this in a function because subclasses that override cacheable do
+        not expect to have to call super() to get the response set by the
+        parent. Subclasses that override this should call super() if they want
+        the parent functionality.
+
+        """
+        return {'context': dict()}
+
     # TODO: everything seems stateless should these be classmethods?
     def cacheable(self, response, *args, **kwargs):
         """
@@ -68,25 +80,29 @@ class BaseWidgetHandler(object):
         """
         pass
 
-    def get_cache(self, __update=False, *args, **kwargs):
+    def get_cache(self, *args, **kwargs):
         """
-        get current cached cacheable part. Updates data in cache with data
-        from self.uncacheable.
+        get current cached cacheable part. Updates data in cache with data from
+        self.uncacheable.
+
+        use kwarg '__force_update' to force the cache to be regenerated.
         """
         response = None
         cache_key = self.cache_key(*args, **kwargs)
-        if cache_key and not __update:
+        if cache_key and not kwargs.get('__force_update', False):
             response = cache.get(cache_key)
         if response is None:
-            response = self.cacheable({'context': dict()}, *args, **kwargs)
+            response = self.default_response(*args, **kwargs)
+            response = self.cacheable(response, *args, **kwargs)
             if cache_key:
                 cache.set(cache_key, response, MARIMO_TIMEOUT)
         return response
 
     def update_cache(self, *args, **kwargs):
         """ convenience wrapper around get_cache for cache invalidation """
-        kwargs['__update'] = True
-        self.get_cache(*args, **kwargs)
+        # we expect the caller to discard the return value but why not return
+        # it anyway.
+        return self.get_cache(__force_update=True, *args, **kwargs)
 
     def on_error(self, ex, data, request, *args, **kwargs):
         """ override this to provide custom exception handling """
@@ -142,8 +158,16 @@ class RequestWidgetHandler(BaseWidgetHandler):
     """
     template = ''
 
-    def cacheable(self, response, *args, **kwargs):
-        response = super(RequestWidgetHandler, self).cacheable(response, *args, **kwargs)
+    def default_response(self, *args, **kwargs):
+        """A default response to pass into cacheable(), which will be modified
+        and eventually returned.
+
+        We do this in a function because subclasses that override cacheable do
+        not expect to have to call super(). Subclasses that override this
+        should call super() if they want the parent functionality.
+
+        """
+        response = super(RequestWidgetHandler, self).default_response(*args, **kwargs)
         response['template'] = self.template
         return response
 
