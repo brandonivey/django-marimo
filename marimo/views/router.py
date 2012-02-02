@@ -32,6 +32,7 @@ class MarimoRouter(View):
     def route(self, request, bulk):
         """ this actually does the routing """
         response = []
+        nocache_override = None
         # TODO sanitize bulk
         for widget in bulk:
             # Clean kwargs; these are passed to python functions and can open
@@ -59,6 +60,12 @@ class MarimoRouter(View):
 
                 try:
                     data.update(view(request, *widget.get('args', []), **widget.get('kwargs', {})))
+                    # req, args, kwargs -> dict
+                    view_data = view(request, *widget.get('args', []), **widget.get('kwargs', {}))
+                    if '__nocache_override' in view_data:
+                        nocache_override = view_data['__nocache_override']
+                        del view_data['__nocache_override']
+                    data.update(view_data)
                 except Exception, e:
                     data = view.on_error(e, data, request, *widget['args'], **widget['kwargs'])
                 else:
@@ -66,15 +73,19 @@ class MarimoRouter(View):
             finally:
                 response.append(data)
 
-        return self.build_response(request, response)
+        return self.build_response(request, response, nocache_override)
 
-    def build_response(self, request, data):
+    def build_response(self, request, data, nocache_override=None):
         as_json = json.dumps(data)
         if request.REQUEST.get('format') == 'jsonp' and request.REQUEST.get('callback'):
-            mimetype = 'text/javascript'
+            content_type = 'text/javascript'
             callback = request.REQUEST.get('callback')
             as_json = "{0}({1});".format(callback, as_json)
         else:
-            mimetype = 'application/json'
+            content_type = 'application/json'
 
-        return HttpResponse(as_json, mimetype=mimetype)
+        hresp = HttpResponse(as_json, content_type=content_type)
+        if nocache_override:
+            hresp['Cache-Control'] = nocache_override
+
+        return hresp

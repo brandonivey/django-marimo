@@ -118,6 +118,17 @@ class BaseWidgetHandler(object):
         data['status'] = 'failed'
         return data
 
+    def nocache_override(self, response):
+        """
+        Add a special key to response that indicates to the router that this
+        widget's outgoing data has totally uncacheable content.
+
+        Results in a Cache-Control of 'no-cache,max-age=0'.
+
+        :param response: a dictionary of widget response data
+        """
+        response['__nocache_override'] = 'no-cache,max-age=0'
+
     def __call__(self, request, *args, **kwargs):
         """ Splits up work into cachable and uncacheable parts """
         response = self.get_cache(*args, **kwargs)
