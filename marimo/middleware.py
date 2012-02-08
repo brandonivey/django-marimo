@@ -1,6 +1,8 @@
 import json
 import re
 
+from django.core.cache import cache
+
 # TODO: this seems like it should be a django setting
 MARIMO_PLACEHOLDER = re.compile("\$\{MARIMO\}")
 
@@ -44,7 +46,6 @@ class Marimo(object):
 
         cache_post_marimo = getattr(request, 'cache_post_marimo', None)
         if cache_post_marimo is not None:
-            from django.core.cache import cache
             cache.set(cache_post_marimo['key'], response, cache_post_marimo['timeout'])
 
         return response
