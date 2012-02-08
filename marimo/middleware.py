@@ -23,6 +23,13 @@ class Marimo(object):
     """
     a simple middleware to register all widgets during page generation
     and add a script to load them where "${MARIMO}" is in the page
+
+    .. attribute:: cache_post_marimo
+
+        Optional request attribute. If set to a dictionary containing the keys
+        'key' and 'timeout', the generated response will be stored via
+        the :meth:`django.core.cache.cache.set` method, using the specified
+        cache key and timeout value.
     """
     def process_request(self, request):
         """ sticks marimo_widgets in the request """
