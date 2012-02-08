@@ -27,6 +27,7 @@ class TestMiddleware(TestCase):
         req = mock.Mock()
         req.marimo_writecapture_delay = MarimoEventContainer()
         req.marimo_widgets = ['dummywidget']
+        req.cache_post_marimo = None
         resp = mock.Mock()
         resp.content = "dummytext ${MARIMO} moredumbtext"
         self.middleware.process_response(req, resp)
@@ -36,11 +37,22 @@ class TestMiddleware(TestCase):
         req = mock.Mock()
         req.marimo_widgets = []
         req.marimo_writecapture_delay = MarimoEventContainer("documentready")
+        req.cache_post_marimo = None
         resp = mock.Mock()
         resp.content = "dummytext ${MARIMO} moredumbtext"
         self.middleware.process_response(req, resp)
         self.assertTrue("documentready" in resp.content)
 
+    @mock.patch('marimo.middleware.cache')
+    def test_process_response_cache_after_widgets(self, mock_cache):
+        req = mock.Mock()
+        req.cache_post_marimo = {'key': 'test-1-2-3', 'timeout': 5}
+        req.marimo_writecapture_delay = MarimoEventContainer()
+        req.marimo_widgets = ['dummywidget']
+        resp = mock.Mock()
+        resp.content = "test ${MARIMO} 123"
+        self.middleware.process_response(req, resp)
+        self.assertTrue(mock_cache.set.called)
 
 class TestContextProcessor(TestCase):
     def setUp(self):
