@@ -2,9 +2,7 @@ import json
 
 from django.http import Http404, HttpRequest
 from django.utils.unittest import TestCase
-from django.conf import settings
 
-from contextlib import contextmanager
 import mock
 
 from marimo.views import MarimoRouter
@@ -22,13 +20,6 @@ widgets = {
         'test': lambda x,y,z: {'key':'value'},
         'failure': FailingWidget()
 }
-
-@contextmanager
-def patch_cors_header(**kwargs):
-    old = settings.MARIMO_CORS_HEADER
-    del settings.MARIMO_CORS_HEADER
-    yield
-    settings.MARIMO_CORS_HEADER = old
 
 
 class TestRouterView(TestCase):
@@ -48,9 +39,7 @@ class TestRouterView(TestCase):
         bulk = [
                 {'id':'1', 'widget_name':'test', 'args':['one', 'two'], 'kwargs':{}}
         ]
-
-        with patch_cors_header():
-            self.router.route(self.request, bulk)
+        self.router.route(self.request, bulk)
         response = json.loads(http_response.call_args[0][0])
         self.assertEqual(len(response), 1)
         self.assertEqual(response[0]['status'], 'succeeded')
@@ -62,8 +51,7 @@ class TestRouterView(TestCase):
         bulk = [
                 {'id':'1', 'widget_name':'failure', 'args':['one', 'two'], 'kwargs':{}}
         ]
-        with patch_cors_header():
-            self.router.route(self.request, bulk)
+        self.router.route(self.request, bulk)
         response = json.loads(http_response.call_args[0][0])
         self.assertEquals(response[0]['status'], 'failed')
 
@@ -73,8 +61,7 @@ class TestRouterView(TestCase):
         bulk = [
                 {'id':'1', 'widget_name':'nopechucktesta', 'args':['one', 'two'], 'kwargs':{}}
         ]
-        with patch_cors_header():
-            self.router.route(self.request, bulk)
+        self.router.route(self.request, bulk)
         response = json.loads(http_response.call_args[0][0])
         self.assertEquals(response[0]['status'], 'WidgetNotFound')
 
@@ -118,34 +105,3 @@ class TestBaseView(TestCase):
         self.base('request', 'arg', kwarg='kwval')
         self.assertFalse(self.base.cacheable.called)
         self.assertTrue(self.base.uncacheable.called)
-
-
-class TestCorsHeaderDecorator(TestCase):
-    def setUp(self):
-        oldcors = settings.MARIMO_CORS_HEADER
-        def cleanup():
-            settings.MARIMO_CORS_HEADER = oldcors
-        self.addCleanup(cleanup)
-
-    def testCorsHeaderSet(self):
-        # A function decorated with set_cors_header while MARIMO_CORS_HEADER
-        # should get the appropriate header added to its dict-like return value
-        settings.MARIMO_CORS_HEADER = '*'
-
-        from marimo.views.router import set_cors_header
-        @set_cors_header
-        def test(self):
-            return {}
-
-        assertEqual(test(), {'Access-Control-Allow-Origin': '*'})
-
-    def testCorsHeaderUnset(self):
-        # A function decorated with set_cors_header should return unmolested
-        del settings.MARIMO_CORS_HEADER
-
-        from marimo.views.router import set_cors_header
-        @set_cors_header
-        def test(self):
-            return {}
-
-        assertEqual(test(), {})
