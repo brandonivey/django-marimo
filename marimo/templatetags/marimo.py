@@ -74,7 +74,11 @@ class MarimoNode(template.Node):
         )
         # TODO this is what needs to get written out by middleware...into head
         if (getattr(settings, 'MARIMO_FAST', False)):
-            context['marimo_widgets'].append(data)
+            # if it is not in context, our middleware isn't active and we
+            # shouldn't try to stick anything in context. this comes up in
+            # tests where render methods are called directly.
+            if 'marimo_widgets' in context:
+                context['marimo_widgets'].append(data)
             script = ''
         else:
             script = '<script> marimo.add_widget(%s); </script>' % json.dumps(data)
