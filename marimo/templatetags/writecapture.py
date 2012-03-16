@@ -9,10 +9,10 @@ logger = logging.getLogger(__name__)
 register = template.Library()
 
 def jsescape(string):
-    """ escaping so that javascript can be safely put into json dicts 
+    """ escaping so that javascript can be safely put into json dicts
         for some reason json newline escaping isn't enough??
     """
-    return string.replace('</script>','$ENDSCRIPT').replace('\n', '$NEWLINE').replace('\r','')
+    return string.replace('<script','$BEGINSCRIPT').replace('</script>','$ENDSCRIPT').replace('\n', '$NEWLINE').replace('\r','')
 
 @register.tag(name='writecapture')
 def write_capture(parser, token):
@@ -94,7 +94,7 @@ class WriteCaptureDelayNode(template.Node):
                          "depends on the Marimo middleware and context_processor.")
             return output
         if wc_delay.marimo_event:
-            logger.error('Overwriting the marimo event delay %s with %s' % 
+            logger.error('Overwriting the marimo event delay %s with %s' %
                          (wc_delay.marimo_event, self.event))
         wc_delay.marimo_event = self.event
         return output
@@ -131,7 +131,7 @@ class WriteCaptureDelayNode(template.Node):
                          "depends on the Marimo middleware and context_processor.")
             return output
         if wc_delay.marimo_event:
-            logger.error('Overwriting the marimo event delay %s with %s' % 
+            logger.error('Overwriting the marimo event delay %s with %s' %
                          (wc_delay.marimo_event, self.event))
         wc_delay.marimo_event = self.event
         return output
@@ -168,7 +168,7 @@ class WriteCaptureDelayNode(template.Node):
                          "depends on the Marimo middleware and context_processor.")
             return output
         if wc_delay.marimo_event:
-            logger.error('Overwriting the marimo event delay %s with %s' % 
+            logger.error('Overwriting the marimo event delay %s with %s' %
                          (wc_delay.marimo_event, self.event))
         wc_delay.marimo_event = self.event
         return output
