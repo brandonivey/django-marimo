@@ -51,10 +51,6 @@ class Marimo(object):
                    " = %s;\n%s" % (json.dumps([wc_delay.marimo_event]), code)
         response.content = MARIMO_PLACEHOLDER.sub(code, response.content)
 
-        cache_post_marimo = getattr(request, 'cache_post_marimo', None)
-        if cache_post_marimo is not None:
-            cache.set(cache_post_marimo['key'], response, cache_post_marimo['timeout'])
-
         return response
 
 def context_processor(request):
