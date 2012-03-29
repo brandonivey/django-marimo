@@ -56,7 +56,7 @@ class MarimoNode(template.Node):
                 return arg.strip('"')
             else:
                 var = template.Variable(arg)
-                return str(var.resolve(context))
+                return var.resolve(context)
 
         data = {}
         data['kwargs'] = {}
