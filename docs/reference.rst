@@ -21,7 +21,10 @@ This is a brief description of ``marimo``
 :mod:`marimo.views`
 --------------------------
 
-.. autoclass:: marimo.views.base.BaseWidget
+.. autoclass:: marimo.views.base.BaseWidgetHandler
+  :members:
+
+.. autoclass:: marimo.views.base.RequestWidgetHandler
   :members:
 
 .. automodule:: marimo.views.router
