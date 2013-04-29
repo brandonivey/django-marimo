@@ -18,23 +18,52 @@ def jsescape(string):
 def write_capture(parser, token):
     """
         Syntax::
-            {% writecapture ["prototype"] ["widget_id"] %}
+            {% writecapture [filter] ["prototype"] ["widget_id"] %}
                 <script src="evil.js">
                     document.write('this is evil')
                 <script>
             {% endwritecapture %}
+
+        Wraps the enclosed HTML inside of a marimo writecapture widget.
+
+        The ``filter`` argument is a boolean (default False) that turns on a
+        writecapture feature called writeOnGetElementById. This fixes some
+        extra-bad scripts.
+
+        The ``prototype`` argument defaults to 'writecapture.' You will only
+        need to use this if you have subclassed marimo's built-in writecapture
+        widget and want to use that instead.
+
+        The ``widget_id`` argument defaults to a 'writecapture_<randomnumber>.'
+        Use this only if you need to specify an alternate element id in the DOM
+        to write to (otherwise one will be created for you at the site of the
+        {%writecapture%} invocation)..
+
     """
     # TODO should work with marimo fast and widget_id should be resolved maybe
     tokens = token.split_contents()
+    if len(tokens) > 4:
+        raise template.TemplateSyntaxError("writecapture block takes at most 3 arguments")
     nodelist = parser.parse(('endwritecapture',))
     parser.delete_first_token()
-    if len(tokens) > 3:
-        raise template.TemplateSyntaxError("writecapture block takes at most 2 arguments")
-    return WriteCaptureNode(nodelist, *tokens[1:])
+
+    if len(tokens) > 1:
+        script_filter = tokens[1]
+        if script_filter == 'False':
+            script_filter = False
+        elif script_filter == 'True':
+            script_filter = True
+        else:
+            script_filter = template.Variable(script_filter)
+    else:
+        script_filter = False
+
+    return WriteCaptureNode(nodelist, script_filter, *tokens[2:])
 
 class WriteCaptureNode(template.Node):
-    def __init__(self, nodelist, prototype='writecapture_widget', widget_id=None):
+    def __init__(self, nodelist, script_filter=False, prototype='writecapture_widget', widget_id=None):
         self.nodelist = nodelist
+        self.script_filter = script_filter
         self.prototype = prototype
         self.widget_id = widget_id
         if not self.widget_id:
@@ -42,9 +71,16 @@ class WriteCaptureNode(template.Node):
 
     def render(self, context):
         eviloutput = jsescape(self.nodelist.render(context))
-        #Set this flag in your template tag for advanced write capture widget sanitation.
-        #Source: https://github.com/iamnoah/writeCapture/wiki/Usage
-        wc_compatibility_mode = context.get('wc_compatibility_mode')
+        if isinstance(self.script_filter, template.Variable):
+            self.script_filter = bool(self.script_filter.resolve(context))
+        # Set this flag in your template tag for advanced write capture widget sanitation.
+        # Source: https://github.com/iamnoah/writeCapture/wiki/Usage
+
+        global_compatibility_mode = context.get('wc_compatibility_mode', None)
+        if global_compatibility_mode is None:
+            wc_compatibility_mode = self.script_filter
+        else:
+            wc_compatibility_mode = global_compatibility_mode
 
         widget_dict = dict(widget_prototype=self.prototype,
                             id=self.widget_id,

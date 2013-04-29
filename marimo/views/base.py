@@ -9,6 +9,8 @@ from django.conf import settings
 from django.core.cache import cache
 from django.http import HttpResponse
 
+from marimo.template_loader import template_loader, TemplateNotFound
+
 MARIMO_TIMEOUT = getattr(settings, 'MARIMO_TIMEOUT', 60*60*24)
 
 class BaseWidgetHandler(object):
@@ -20,6 +22,10 @@ class BaseWidgetHandler(object):
     cache_key().
 
     """
+
+    # override and set nocache to True if no-cache header
+    # should be set in the response
+    nocache = False
 
     def default_response(self, *args, **kwargs):
         """A default response to pass into cacheable(), which will be modified
@@ -69,7 +75,7 @@ class BaseWidgetHandler(object):
 
     def cache_key(self, *args, **kwargs):
         """
-        Generates the cache key that this widget will use based on  *args and **kwargs
+        Generates the cache key that this widget will use based on \*args and \*\*kwargs
 
         Must be overridden in subclasses if cacheable is overridden.
 
@@ -133,6 +139,8 @@ class BaseWidgetHandler(object):
         """ Splits up work into cachable and uncacheable parts """
         response = self.get_cache(*args, **kwargs)
         response = self.uncacheable(request, response, *args, **kwargs)
+        if self.nocache:
+            self.nocache_override(response)
         return response
 
     @classmethod
@@ -160,7 +168,8 @@ class RequestWidgetHandler(BaseWidgetHandler):
 
     Properties::
 
-        template:   A string; the template data that this widget will use. (Not a filename.)
+        template:   A string; the template data that this widget will use. (Not a filename). Widgets processed by this handler can supply a ``template_path`` kwarg which will be loaded and used instead of this value.
+
 
     To load a template from a file relative to a dir in MARIMO_TEMPLATE_DIRS:
 
@@ -179,7 +188,16 @@ class RequestWidgetHandler(BaseWidgetHandler):
 
         """
         response = super(RequestWidgetHandler, self).default_response(*args, **kwargs)
-        response['template'] = self.template
+        template = self.template
+
+        template_path = kwargs.get('template_path')
+        if template_path:
+            try:
+                template = template_loader.load(template_path)
+            except TemplateNotFound:
+                pass
+
+        response['template'] = template
         return response
 
 # backwards compatibility. Once nothing else refers to BaseWidget, delete this

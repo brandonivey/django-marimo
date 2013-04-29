@@ -1,12 +1,13 @@
 import json
 
 from django.http import Http404, HttpRequest
-from django.utils.unittest import TestCase
+from unittest2 import TestCase
 
 import mock
 
+from marimo.template_loader import TemplateNotFound
 from marimo.views import MarimoRouter
-from marimo.views import BaseWidget
+from marimo.views import BaseWidget, RequestWidgetHandler
 
 class FailingWidget(object):
     def __call__(self, request, *args, **kwargs):
@@ -105,3 +106,35 @@ class TestBaseView(TestCase):
         self.base('request', 'arg', kwarg='kwval')
         self.assertFalse(self.base.cacheable.called)
         self.assertTrue(self.base.uncacheable.called)
+
+    def test_nocache_override(self):
+        response = dict()
+        self.base.nocache_override(response)
+        self.assertTrue('__nocache_override' in response)
+        self.assertEqual(response['__nocache_override'], 'no-cache,max-age=0')
+
+class TestRequestWidgetHandlerView(TestCase):
+    def setUp(self):
+        self.handler = RequestWidgetHandler()
+        self.handler.template = 'some template code'
+
+    def test_default_resposne_template_not_found(self):
+        mtpl = mock.Mock()
+        mtpl.load = mock.Mock(side_effect=TemplateNotFound)
+        with mock.patch('marimo.views.base.template_loader', mtpl):
+            template_path = 'hello'
+            response = self.handler.default_response(**{'template_path':template_path})
+        self.assertEqual(response['template'], self.handler.template)
+
+    def test_base_default_response_template(self):
+        with mock.patch('marimo.views.base.template_loader') as mtpl:
+            template_path = 'hello'
+            self.handler.default_response(**{'template_path':template_path})
+
+        mtpl.load.assert_called_with(template_path)
+
+    def test_base_default_response_no_template(self):
+        with mock.patch('marimo.views.base.template_loader') as mtpl:
+            self.handler.default_response()
+
+        self.assertTrue(not mtpl.called)

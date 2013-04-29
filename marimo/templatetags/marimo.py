@@ -46,7 +46,7 @@ class MarimoNode(template.Node):
         self.kwargs = kwargs
 
     def render(self, context):
-        if hasattr(self.kwargs, 'murl'):
+        if 'murl' in self.kwargs:
             murl = self.kwargs.pop('murl')
         else:
             murl = settings.MARIMO_URL
@@ -60,7 +60,7 @@ class MarimoNode(template.Node):
 
         data = {}
         data['kwargs'] = {}
-        for (k,v) in self.kwargs.items():
+        for (k, v) in self.kwargs.items():
             data['kwargs'][k] = maybe_resolve(v)
         data['args'] = [maybe_resolve(arg) for arg in self.args]
         data['widget_name'] = self.widget_name

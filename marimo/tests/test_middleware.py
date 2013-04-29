@@ -1,6 +1,6 @@
 import mock
 
-from django.utils.unittest import TestCase
+from unittest2 import TestCase
 
 from marimo.middleware import MarimoEventContainer, Marimo, context_processor
 

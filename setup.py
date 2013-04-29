@@ -3,7 +3,7 @@ import os
 
 setup(
     name = "marimo",
-    version = "0.1.1",
+    version = "0.5",
     packages = ['marimo',],
     author = "Cox Media Group",
     author_email = "opensource@coxinc.com",
